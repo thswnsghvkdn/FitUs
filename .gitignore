@@ -1,0 +1,7 @@
+node_modules
+backend/backend/__init__.py
+backend/backend/__pycache__/
+backend/search/__pycache__/
+backend/search/migrations/__pycache__/
+package-lock.json
+secrets.json
