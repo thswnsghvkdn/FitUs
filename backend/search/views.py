@@ -1,7 +1,10 @@
-from django.shortcuts import render
+from typing import get_origin
 import requests
 from bs4 import BeautifulSoup
-
+from django.http import (
+    JsonResponse,
+)  # django.http에서 서버의 요청에 대한 응답을 Json으로 응답하기 위해 JsonResponse 가져오기
+from django.views.decorators.csrf import csrf_exempt
 
 url = "https://search.musinsa.com/search/musinsa/goods?q=카고바지"
 res = requests.get(url)
@@ -9,12 +12,98 @@ res.raise_for_status
 
 soup = BeautifulSoup(res.text, "lxml")
 title = soup.find_all("a", attrs={"name": "goods_link"})
-print(title[0]["href"])
 
 
+@csrf_exempt
 def size_search(request):
     if request.method == "GET":
-        return
+        return  # JsonResponse({"message": "Hello World"}, status=200)
     elif request.method == "POST":
-        return
+        url = "https://search.musinsa.com/search/musinsa/goods?q=카고바지"
+        res = requests.get(url)  # url 정보 get
+        res.raise_for_status
+        soup = BeautifulSoup(res.text, "lxml")  # lxml 변환
+        totalTitle = soup.find_all(
+            "a", attrs={"class": "img-block"}
+        )  # image a 링크들을 가져온다
+        number = 0
+        goodsList = []
+        # 각 상품헤이지로 접속하기
+        for title in totalTitle:
+            # 각 상품의 정보 (링크 , 이미지 , 수치오차)
+            goodsInfo = {"image": "", "link": "", "diff": 0}
+            # 10개까지 받아오기
+            if number > 10:
+                break
+            # useragent 로 불순한 의도가 아님을 증명하기
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36"
+            }
+            # 상세페이지 이동
+            res = requests.get(title["href"], headers=headers)
+            res.raise_for_status
+            soup = BeautifulSoup(res.text, "lxml")
+            # try :
+            sizeTitle = soup.find_all(
+                "th", attrs={"class": "item_val"}
+            )  # 총장 , 밑위,  허벅지 title
+            goodsSize = soup.find_all(
+                "td", attrs={"class": "goods_size_val"}
+            )  # 사이즈들을 1차원 배열로 한번에 받아오기
+            # except NameError:
+            #     print("정의되지 않음")
+            # else:
+            #     print("정의됨")
+            # 사이즈별 인덱스찾기
+            if len(sizeTitle) <= 0:
+                break  # 임시방편 NameError 예외처리
 
+            osIndex = -1
+            wsIndex = -1
+            thIndex = -1
+            rsIndex = -1
+
+            index = 0  # 현재 인덱스
+
+            # 인덱스별 사이즈 종류 파악
+            for i in sizeTitle:
+                text = i.get_text()
+                # size table title에 각 단어가 있는지 판별하여 index위치를 찾아내기
+                if text.find("총") >= 0 and text.find("장") >= 0:
+                    osIndex = index
+                elif text.find("허벅지") >= 0:
+                    thIndex = index
+                elif text.find("밑위") >= 0:
+                    rsIndex = index
+                elif text.find("허리") >= 0:
+                    wsIndex = index
+                index += 1
+            # 해당 제품의 정보 링크 , 이미지 , 수치 오차
+
+            # 상품정보저장
+            row = len(sizeTitle)
+            tot = 0
+            index = 0
+            min_tot = 100000  # 오차 중 가장 작은 오차값
+            for size in goodsSize:
+                # print(int(size.get_text()))
+                if index == osIndex:
+                    tot += abs(94 - float(size.get_text()))
+                elif index == rsIndex:
+                    tot += abs(34 - float(size.get_text()))
+                elif index == wsIndex:
+                    tot += abs(27 - float(size.get_text()))
+                elif index == thIndex:
+                    tot += abs(26 - float(size.get_text()))
+                index += 1
+                if index >= row:
+                    min_tot = min(tot, min_tot)
+                    index = 0
+                    tot = 0
+            goodsInfo["diff"] = min_tot
+            goodsInfo["link"] = title["href"]
+            goodsInfo["image"] = title.img["data-original"]
+            # 해당 제품의 정보들을 리스트에 담아 response
+            goodsList.append(goodsInfo)
+            number += 1
+        return JsonResponse({"message": goodsList}, status=200)
