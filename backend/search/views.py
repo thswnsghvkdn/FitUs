@@ -1,17 +1,11 @@
 from typing import get_origin
 import requests
+import json
 from bs4 import BeautifulSoup
 from django.http import (
     JsonResponse,
 )  # django.http에서 서버의 요청에 대한 응답을 Json으로 응답하기 위해 JsonResponse 가져오기
 from django.views.decorators.csrf import csrf_exempt
-
-url = "https://search.musinsa.com/search/musinsa/goods?q=카고바지"
-res = requests.get(url)
-res.raise_for_status
-
-soup = BeautifulSoup(res.text, "lxml")
-title = soup.find_all("a", attrs={"name": "goods_link"})
 
 
 @csrf_exempt
@@ -19,7 +13,9 @@ def size_search(request):
     if request.method == "GET":
         return  # JsonResponse({"message": "Hello World"}, status=200)
     elif request.method == "POST":
-        url = "https://search.musinsa.com/search/musinsa/goods?q=카고바지"
+        # requset body 를 data로 받을 수 있도록 json 형식을 파싱한다.
+        data = json.loads(request.body)
+        url = "https://search.musinsa.com/search/musinsa/goods?q=" + data["keyword"]
         res = requests.get(url)  # url 정보 get
         res.raise_for_status
         soup = BeautifulSoup(res.text, "lxml")  # lxml 변환
@@ -88,13 +84,13 @@ def size_search(request):
             for size in goodsSize:
                 # print(int(size.get_text()))
                 if index == osIndex:
-                    tot += abs(94 - float(size.get_text()))
+                    tot += abs(data["os"] - float(size.get_text()))
                 elif index == rsIndex:
-                    tot += abs(34 - float(size.get_text()))
+                    tot += abs(data["rs"] - float(size.get_text()))
                 elif index == wsIndex:
-                    tot += abs(27 - float(size.get_text()))
+                    tot += abs(data["ws"] - float(size.get_text()))
                 elif index == thIndex:
-                    tot += abs(26 - float(size.get_text()))
+                    tot += abs(data["th"] - float(size.get_text()))
                 index += 1
                 if index >= row:
                     min_tot = min(tot, min_tot)
@@ -106,4 +102,5 @@ def size_search(request):
             # 해당 제품의 정보들을 리스트에 담아 response
             goodsList.append(goodsInfo)
             number += 1
+        goodsList = sorted(goodsList, key=(lambda x: x["diff"]))  # 오차값 기준으로 정렬
         return JsonResponse({"message": goodsList}, status=200)

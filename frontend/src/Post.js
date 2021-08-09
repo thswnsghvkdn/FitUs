@@ -1,11 +1,9 @@
 import React from "react"
 import Axios from "axios"
 import 'bootstrap/dist/css/bootstrap.min.css'
-
 import { Button, ListGroup, Form, Navbar, Nav } from 'react-bootstrap'
-
 import { CaretRight, CaretLeft } from 'react-bootstrap-icons'
-const apiUrl = "http://127.0.0.1:8000/api/"
+const apiUrl = "http://127.0.0.1:8000/search/"
 
 
 class Post extends React.Component {
@@ -13,7 +11,6 @@ class Post extends React.Component {
         names: [],
         listItem: [],
     }
-
     keyword = ""
     ordered = []
     size = [-1, -1, -1, -1]
@@ -23,6 +20,7 @@ class Post extends React.Component {
             names: [],
             listItem: [],
             ordered: [],
+            responseLists: [],
         }
         this.rise = this.thigh = this.outseam = -1
     }
@@ -78,17 +76,20 @@ class Post extends React.Component {
         this.ordered = answer;
     }
     attendance = () => {
-
-        Axios.post(apiUrl, { keyword: this.keyword })
-
-
+        // 포스트요청에 body들을 보낸다
+        Axios.post(apiUrl, { keyword: this.keyword, os: this.size[0], th: this.size[1], ws: this.size[2], rs: this.size[3], })
             .then(response => {
+                // 오차를 기준으로 오름차순 정렬된 리스트를 응답받는다.
                 this.setState({
-                    names: response.data,
+                    responseLists: response.data,
                 })
-                this.makeList();
-                for (let i = 0; i < this.ordered.length; i++)
-                    this.t.push(<ListGroup.Item style={{ width: '400px', marginLeft: '50px' }}><a href={this.state.names[this.ordered[i].index].link}><img src={this.state.names[this.ordered[i].index].image} width="100px" /></a></ListGroup.Item>)
+                // this.makeList();
+                // 리스트 추가 
+                debugger
+                for (let i = 0; i < this.state.responseLists.message.length; i++) {
+                    debugger
+                    this.t.push(<ListGroup.Item style={{ width: '400px', marginLeft: '50px' }}><a href={this.state.responseLists.message[i].link}><img src={this.state.responseLists.message[i].image} width="100px" /></a></ListGroup.Item>)
+                }
                 this.setState({
                     listItem: this.t,
                 })
@@ -97,12 +98,11 @@ class Post extends React.Component {
     }
     render = () => {
         return (
-
-            <div  >
+            <div>
                 <Navbar bg="primary" variant="dark">
-                    <Nav className="mr-auto">
+                    <Nav className="mr-auto" style={{ margin: "auto" }}>
                         <Nav.Link href="#home">Home</Nav.Link>
-                        <Nav.Link href="#features" style={{ marginLeft: "600px" }}>logout</Nav.Link>
+                        <Nav.Link href="#features" style={{ margin: "100 auto" }}>logout</Nav.Link>
                     </Nav>
                 </Navbar>
                 <div style={{ marginLeft: '10rem', marginTop: '35rem', float: 'left' }}>
@@ -113,7 +113,8 @@ class Post extends React.Component {
                         <Form.Group>
                             <Form.Control type="text" placeholder="검색 하세요" onChange={function (e) { this.keyword = e.target.value }.bind(this)} style={({ margin: '0.5rem', width: '200px' })} />
                             <Form.Control type="text" placeholder="총장" onChange={function (e) { this.size[0] = Number(e.target.value) }.bind(this)} style={({ margin: '0.5rem', width: '200px' })} />
-                            <Form.Control type="text" placeholder="허벅지" onChange={function (e) { this.size[2] = Number(e.target.value) }.bind(this)} style={({ margin: '0.5rem', width: '200px' })} />
+                            <Form.Control type="text" placeholder="허벅지" onChange={function (e) { this.size[1] = Number(e.target.value) }.bind(this)} style={({ margin: '0.5rem', width: '200px' })} />
+                            <Form.Control type="text" placeholder="허리" onChange={function (e) { this.size[2] = Number(e.target.value) }.bind(this)} style={({ margin: '0.5rem', width: '200px' })} />
                             <Form.Control type="text" placeholder="밑위" onChange={function (e) { this.size[3] = Number(e.target.value) }.bind(this)} style={({ margin: '0.5rem', width: '200px' })} />
                             <Button multiple onClick={this.attendance} style={({ margin: '0.5rem', width: '200px' })}>검색</Button>
                         </Form.Group>
@@ -123,7 +124,6 @@ class Post extends React.Component {
                 <div style={{ float: 'left', marginTop: '35rem' }}>
                     <CaretRight />
                 </div>
-
             </div>
         );
     }
