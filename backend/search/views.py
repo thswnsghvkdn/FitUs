@@ -29,7 +29,7 @@ def size_search(request):
             # 각 상품의 정보 (링크 , 이미지 , 수치오차)
             goodsInfo = {"image": "", "link": "", "diff": 0}
             # 10개까지 받아오기
-            if number > 10:
+            if number > 5:
                 break
             # useragent 로 불순한 의도가 아님을 증명하기
             headers = {

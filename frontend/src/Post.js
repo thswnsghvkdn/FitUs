@@ -85,10 +85,8 @@ class Post extends React.Component {
                 })
                 // this.makeList();
                 // 리스트 추가 
-                debugger
                 for (let i = 0; i < this.state.responseLists.message.length; i++) {
-                    debugger
-                    this.t.push(<ListGroup.Item style={{ width: '400px', marginLeft: '50px' }}><a href={this.state.responseLists.message[i].link}><img src={this.state.responseLists.message[i].image} width="100px" /></a></ListGroup.Item>)
+                    this.t.push(<ListGroup.Item style={{ width: '80%', marginLeft: '0%' }}><a href={this.state.responseLists.message[i].link}><img src={this.state.responseLists.message[i].image} width="100px" /></a></ListGroup.Item>)
                 }
                 this.setState({
                     listItem: this.t,
@@ -99,18 +97,20 @@ class Post extends React.Component {
     render = () => {
         return (
             <div>
-                <Navbar bg="primary" variant="dark">
-                    <Nav className="mr-auto" style={{ margin: "auto" }}>
-                        <Nav.Link href="#home">Home</Nav.Link>
-                        <Nav.Link href="#features" style={{ margin: "100 auto" }}>logout</Nav.Link>
-                    </Nav>
-                </Navbar>
-                <div style={{ marginLeft: '10rem', marginTop: '35rem', float: 'left' }}>
-                    <CaretLeft />
+                <div>
+                    <Navbar bg="primary" variant="dark">
+                        <Nav className="mr-auto" >
+                            <Nav.Link href="#home" >Home</Nav.Link>
+                            <Nav.Link href="#features" >logout</Nav.Link>
+                        </Nav>
+                    </Navbar>
                 </div>
-                <div style={({ width: '500px', float: 'left' })}>
-                    <Form style={{ marginTop: '5rem', marginLeft: '8rem' }}>
-                        <Form.Group>
+                {/* <div style={{ float: 'left' }}>
+                    <CaretLeft />
+                </div> */}
+                <div class="parent" style={{ width: '100%', height: '300px' }} >
+                    <Form style={{ transform: 'translate(40% , 10%)' }} > {/* 가운데 정렬을 위한 translate */}
+                        <Form.Group >
                             <Form.Control type="text" placeholder="검색 하세요" onChange={function (e) { this.keyword = e.target.value }.bind(this)} style={({ margin: '0.5rem', width: '200px' })} />
                             <Form.Control type="text" placeholder="총장" onChange={function (e) { this.size[0] = Number(e.target.value) }.bind(this)} style={({ margin: '0.5rem', width: '200px' })} />
                             <Form.Control type="text" placeholder="허벅지" onChange={function (e) { this.size[1] = Number(e.target.value) }.bind(this)} style={({ margin: '0.5rem', width: '200px' })} />
@@ -119,11 +119,15 @@ class Post extends React.Component {
                             <Button multiple onClick={this.attendance} style={({ margin: '0.5rem', width: '200px' })}>검색</Button>
                         </Form.Group>
                     </Form>
-                    <ListGroup>{this.state.listItem}</ListGroup>
                 </div>
-                <div style={{ float: 'left', marginTop: '35rem' }}>
+                <div class="parent2" style={{ width: '100%' }}>
+                    <ListGroup style={{ transform: 'translate(5% )' }}>
+                        {this.state.listItem}
+                    </ListGroup>
+                </div>
+                {/* <div style={{ display: 'inline-block' }}>
                     <CaretRight />
-                </div>
+                </div> */}
             </div>
         );
     }
